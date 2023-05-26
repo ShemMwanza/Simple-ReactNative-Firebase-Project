@@ -1,8 +1,8 @@
-import React from 'react'
-import { StyleSheet } from 'react-native'
-import { Button as PaperButton } from 'react-native-paper'
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Button as PaperButton, Text } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { theme } from '../core/theme'
+import { theme } from '../../core/theme';
 
 export default function GoogleButton({ mode, style, ...props }) {
   return (
@@ -12,14 +12,16 @@ export default function GoogleButton({ mode, style, ...props }) {
         mode === 'outlined' && { borderColor: theme.colors.grey },
         style,
       ]}
-      labelStyle={[styles.text, { color: theme.colors.grey }]}
+      labelStyle={styles.labelStyle}
       mode={mode}
       {...props}
     >
-      <Icon name="google" color="#777" size={20} style={styles.icon} />
-      Sign In with Google
+      <View style={styles.content}>
+        <Icon name="google" color="#777" size={20} style={styles.icon} />
+        <Text style={styles.text}>Sign In with Google</Text>
+      </View>
     </PaperButton>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -32,13 +34,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.grey,
   },
-  text: {
+  labelStyle: {
     fontWeight: 'bold',
     fontSize: 15,
-    lineHeight: 20,
+    lineHeight: 10,
     color: theme.colors.grey,
+    marginLeft: 10, // Adjust this value to align the text and icon properly
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   icon: {
     marginRight: 10,
   },
-})
+  text: {
+    marginLeft: 10,
+  },
+});
