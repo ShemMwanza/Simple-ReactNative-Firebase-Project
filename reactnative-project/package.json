@@ -29,6 +29,7 @@
     "react-native-gesture-handler": "^2.9.0",
     "react-native-paper": "^5.6.0",
     "react-native-reanimated": "~2.14.4",
+    "react-native-snap-carousel": "^3.9.1",
     "react-native-status-bar-height": "^2.6.0",
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-web": "^0.18.12"
