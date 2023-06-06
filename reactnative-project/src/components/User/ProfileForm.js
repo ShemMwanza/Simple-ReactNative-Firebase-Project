@@ -9,15 +9,13 @@ import { nameValidator } from '../../helpers/nameValidator'
 import React from 'react'
 
 export default function ProfileForm() {
-  const { currentUser, placeOrder, cartItems, updateUserInfo } = useAuth();
+  const { currentUser, updateProfileDetails, updateUserInfo } = useAuth();
   const [email, setEmail] = useState({ value: currentUser.email, error: '' })
   const [name, setName] = useState({ value: currentUser.displayName, error: '' })
-  const [location, setLocation] = useState({ value: '', error: '' })
-  const [phoneNumber, setPhoneNumber] = useState({ value: '', error: '' })
   const handleNameChange = (text) => {
     setName({ value: text, error: '' })
   }
-  const navigation = useNavigation();
+  const [showProfileMessage, setProfileMessage] = useState(false);
   const handleEmailChange = (text) => {
     setEmail({ value: text, error: '' })
   }
@@ -34,10 +32,23 @@ export default function ProfileForm() {
       return
     }
     try {
-      await updateUserInfo(email.value, name.value, phoneNumber.value, total);
-      navigation.navigate('PaymentMethodScreen');
+      await updateProfileDetails(name.value, email.value);
+      return (
+
+        <CustomModal
+          visible={showProfileMessage}
+          title="Success"
+          message="Your profile has been updated"
+          onPress={() => setProfileMessage(false)}
+        />);
     } catch (error) {
-      console.log(error);
+      return (
+        <CustomModal
+          visible={showProfileMessage}
+          title="Error!"
+          message="Something went wrong"
+          onPress={() => setProfileMessage(false)}
+        />);
     }
 
   };
@@ -69,30 +80,7 @@ export default function ProfileForm() {
             keyboardType="email-address"
           />
         </View>
-        <View style={styles.inputContainer}>
-          <TextInput
-            label="Phone Number"
-            returnKeyType='next'
-            keyboardType='numeric'
-            value={phoneNumber.value}
-            error={!!name.error}
-            errorText={name.error}
-            onChangeText={(text) => setPhoneNumber({ value: text })}
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput
-            label="Delivery Location"
-            returnKeyType="next"
-            value={location.value}
-            error={!!name.error}
-            errorText={name.error}
-            onChangeText={(text) => setLocation({ value: text })}
-          />
-          <Text style={styles.inputDescription}>
-            *Please be specific
-          </Text>
-        </View>
+
       </>
       <Button mode="contained" onPress={handleSubmit}>
         Proceed to Payment
