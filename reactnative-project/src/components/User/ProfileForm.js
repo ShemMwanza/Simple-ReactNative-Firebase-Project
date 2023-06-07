@@ -3,58 +3,84 @@ import { useAuth } from '../../../Context/AuthContext';
 import TextInput from '../TextInput';
 import Button from '../Button/Button';
 import { theme } from '../../core/theme';
-import { useNavigation } from '@react-navigation/native';
 import { emailValidator } from '../../helpers/emailValidator'
 import { nameValidator } from '../../helpers/nameValidator'
-import React from 'react'
+import React, { useState } from 'react'
+import CustomModal from '../Alert/CustomModal'
+import Loading from '../../screens/LoadingScreen';
 
 export default function ProfileForm() {
-  const { currentUser, updateProfileDetails, updateUserInfo } = useAuth();
+  const { currentUser, updateProfileDetails, sendPasswordReset } = useAuth();
   const [email, setEmail] = useState({ value: currentUser.email, error: '' })
   const [name, setName] = useState({ value: currentUser.displayName, error: '' })
   const handleNameChange = (text) => {
     setName({ value: text, error: '' })
   }
   const [showProfileMessage, setProfileMessage] = useState(false);
+  const [showErrorProfileMessage, setErrorProfileMessage] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleEmailChange = (text) => {
     setEmail({ value: text, error: '' })
   }
   const handleSubmit = async () => {
     const emailError = emailValidator(email.value)
     const nameError = nameValidator(name.value);
-    const phoneError = nameValidator(phoneNumber.value);
-    const locationError = nameValidator(location.value);
-    if (emailError || nameError || locationError || phoneError) {
+    if (emailError || nameError) {
       setEmail({ ...email, error: emailError });
       setName({ ...name, error: nameError });
-      setLocation({ ...location, error: locationError });
-      setPhoneNumber({ ...phoneNumber, error: phoneError });
       return
     }
     try {
-      await updateProfileDetails(name.value, email.value);
-      return (
+      await updateProfileDetails(name.value, email.value).then(() => {
+        setProfileMessage(true);
 
-        <CustomModal
-          visible={showProfileMessage}
-          title="Success"
-          message="Your profile has been updated"
-          onPress={() => setProfileMessage(false)}
-        />);
+      }).catch(() => {
+        setErrorProfileMessage(true);
+      });
+
     } catch (error) {
-      return (
-        <CustomModal
-          visible={showProfileMessage}
-          title="Error!"
-          message="Something went wrong"
-          onPress={() => setProfileMessage(false)}
-        />);
+      setErrorProfileMessage(true);
     }
-
   };
+
+  const handlePassword = async () => {
+    setIsLoading(true);
+
+    try {
+      await Promise.all([
+        sendPasswordReset(currentUser.email),
+        new Promise((resolve) => setTimeout(resolve, 5000)) // Timeout of 5 seconds
+      ]);
+      setProfileMessage(true);
+    } catch (error) {
+      console.log(error.code);
+      setErrorProfileMessage(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionText}>2. User Information</Text>
+
+      <CustomModal
+        visible={showProfileMessage}
+        title="Success"
+        message="Your request has been processed"
+        onPress={() => setProfileMessage(false)}
+      />
+      <CustomModal
+        visible={showErrorProfileMessage}
+        title="Error!"
+        message="Something went wrong"
+        onPress={() => setErrorProfileMessage(false)}
+      />
+      <Text style={styles.sectionText}>User Information</Text>
       <>
         <View style={styles.inputContainer}>
           <TextInput
@@ -80,10 +106,13 @@ export default function ProfileForm() {
             keyboardType="email-address"
           />
         </View>
-
       </>
       <Button mode="contained" onPress={handleSubmit}>
-        Proceed to Payment
+        Update
+      </Button>
+
+      <Button mode="outlined" onPress={handlePassword}>
+        Change Password
       </Button>
     </View>
   )
@@ -102,7 +131,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   sectionText: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     color: theme.colors.title,
     marginTop: 16,

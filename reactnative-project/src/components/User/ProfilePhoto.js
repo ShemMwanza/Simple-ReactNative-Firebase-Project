@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, TouchableOpacity, Modal, StyleSheet, View, Button, Alert, Platform, Linking } from 'react-native';
+import { Image, TouchableOpacity, Modal, StyleSheet, View, Button, Alert, Platform, Linking, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
@@ -13,6 +13,7 @@ const ProfilePhoto = ({ photoUrl, onSetProfilePhoto }) => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [cameraPermission, setCameraPermission] = useState(null);
     const [galleryPermission, setGalleryPermission] = useState(null);
+    const [isLoading, setIsLoading] = useState(false); // New state for loading indicator
 
     const openModal = () => {
         setModalVisible(true);
@@ -93,52 +94,58 @@ const ProfilePhoto = ({ photoUrl, onSetProfilePhoto }) => {
         }
     };
 
-  const handleSetProfilePhoto = async () => {
-    if (!selectedImage) return;
+    const handleSetProfilePhoto = async () => {
+        if (!selectedImage) return;
 
-    try {
-        const response = await fetch(selectedImage);
-        const blob = await response.blob();
+        try {
+            setIsLoading(true); // Start loading indicator
 
-        const fileName = selectedImage.split('/').pop();
+            const response = await fetch(selectedImage);
+            const blob = await response.blob();
 
-        const storageRef = ref(storage, `ProfilePhotos/${currentUser.uid}/${fileName}`);
-        const uploadTask = uploadBytesResumable(storageRef, blob);
+            const fileName = selectedImage.split('/').pop();
 
-        await uploadTask;
+            const storageRef = ref(storage, `ProfilePhotos/${currentUser.uid}/${fileName}`);
+            const uploadTask = uploadBytesResumable(storageRef, blob);
 
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        updatePhoto(downloadURL);
-        console.log(downloadURL);
+            await uploadTask;
 
-        Alert.alert('Success', 'Image Updated Successfully');
-    } catch (error) {
-        console.log(error);
-        Alert.alert('Error', 'Something went wrong! Try again');
-    } finally {
-        closeModal();
-    }
-};
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            updatePhoto(downloadURL);
+            console.log(downloadURL);
 
-
-
+            Alert.alert('Success', 'Image Updated Successfully');
+        } catch (error) {
+            console.log(error);
+            Alert.alert('Error', 'Something went wrong! Try again');
+        } finally {
+            setIsLoading(false); // Stop loading indicator
+            closeModal();
+        }
+    };
 
     return (
         <TouchableOpacity style={styles.container} onPress={handlePhotoPress}>
             <Image source={{ uri: photoUrl }} style={styles.photo} />
-            <Modal visible={modalVisible} animationType="slide">
+            <Modal visible={modalVisible} animationType="slide" transparent={true}>
                 <View style={styles.modalContainer}>
-                    <Button title="Choose from Library" onPress={handleImageSelection} />
-                    <Button title="Take Photo" onPress={handleCameraCapture} />
-                    <Button title="Close" onPress={closeModal} />
-                    {selectedImage && <Image source={{ uri: selectedImage }} style={styles.selectedImage} />}
+                    <View style={styles.modalContent}>
+                        <Button title="Choose from Library" onPress={handleImageSelection} />
+                        <Button title="Take Photo" onPress={handleCameraCapture} />
+                        <Button title="Close" onPress={closeModal} />
+                        {selectedImage && <Image source={{ uri: selectedImage }} style={styles.selectedImage} />}
 
-                    {/* New button for setting profile photo */}
-                    <Button title="Set as Profile Photo" onPress={handleSetProfilePhoto} />
+                        {selectedImage ? (
+                            <Button title="Set as Profile Photo" onPress={handleSetProfilePhoto} />
+                        ) : null}
+                        {/* Loading indicator */}
+                        {isLoading && <ActivityIndicator size="large" color="blue" />}
+                    </View>
                 </View>
             </Modal>
         </TouchableOpacity>
     );
+
 };
 
 const styles = StyleSheet.create({
@@ -151,15 +158,43 @@ const styles = StyleSheet.create({
         borderRadius: 100,
     },
     modalContainer: {
+        backgroundColor: '#ffffff', // light background color
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    modalContent: {
+        backgroundColor: '#ffffff', // light background color
+        padding: 20,
+        borderRadius: 10,
+        width: '80%',
+        alignItems: 'center',
+    },
+    modalButtonsContainer: {
+        marginTop: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+    },
+    modalButton: {
+        width: '40%',
+        borderColor: '#000000',
+        borderWidth: 1,
+        borderRadius: 5,
+    },
+    buttonText: {
+        color: '#000000',
+        textAlign: 'center',
+        fontSize: 18,
     },
     selectedImage: {
         width: 200,
         height: 200,
         marginVertical: 10,
+        borderRadius: 10,
     },
 });
+
+
 
 export default ProfilePhoto;
