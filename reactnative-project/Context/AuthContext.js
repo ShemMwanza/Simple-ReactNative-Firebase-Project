@@ -158,6 +158,20 @@ export function AuthProvider({ children }) {
             throw error;
         }
     };
+    const [userCheckoutInfo, setUserInfo] = useState({
+        email: '',
+        name: '',
+        phoneNumber: '',
+        total: '',
+    });
+
+    const updateUserInfo = (email, name, phoneNumber) => {
+        setUserInfo({
+            email: email,
+            name: name,
+            phoneNumber: phoneNumber,
+        });
+    };
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
@@ -198,7 +212,8 @@ export function AuthProvider({ children }) {
         addQuantityToCart,
         isItemInCart,
         cartItems,
-        setCartItems, getCartItems
+        setCartItems, getCartItems,
+        userCheckoutInfo, updateUserInfo
     };
 
     return (
