@@ -12,12 +12,15 @@ import { theme } from '../core/theme'
 import { emailValidator } from '../helpers/emailValidator'
 import { passwordValidator } from '../helpers/passwordValidator'
 import { nameValidator } from '../helpers/nameValidator'
+import { useAuth } from '../../Context/AuthContext'
 
 export default function RegisterScreen({ navigation }) {
+  const { currentUser, createWithEmailAndPassword, signInWithGoogle } = useAuth();
   const [name, setName] = useState({ value: '', error: '' })
   const [email, setEmail] = useState({ value: '', error: '' })
   const [password, setPassword] = useState({ value: '', error: '' })
-
+  const [confirm_password, setConfirmPassword] = useState({ value: '', error: '' })
+  const [passwordError, setPasswordError] = useState('');
   const onSignUpPressed = () => {
     const nameError = nameValidator(name.value)
     const emailError = emailValidator(email.value)
@@ -28,11 +31,21 @@ export default function RegisterScreen({ navigation }) {
       setPassword({ ...password, error: passwordError })
       return
     }
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Dashboard' }],
-    })
+    else if (password.value !== confirm_password.value) {
+      setPasswordError('Passwords do not match');
+    }
+    else {
+      createWithEmailAndPassword(name.value, email.value, password.value).then(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Dashboard' }],
+        });
+        console.log("Account has been created");
+      });
+    }
   }
+
+  const onGoogleButtonPress = () => { signInWithGoogle }
 
   return (
     <Background>
@@ -62,13 +75,21 @@ export default function RegisterScreen({ navigation }) {
         />
         <TextInput
           label="Password"
-          returnKeyType="done"
+          returnKeyType="next"
           value={password.value}
           onChangeText={(text) => setPassword({ value: text, error: '' })}
           error={!!password.error}
           errorText={password.error}
           secureTextEntry
         />
+        <TextInput
+          label="Confirm Password"
+          returnKeyType="done"
+          value={confirm_password.value}
+          onChangeText={(text) => setConfirmPassword({ value: text, error: '' })}
+          secureTextEntry
+        />
+        <Text style={styles.error}>{passwordError}</Text>
         <Button
           mode="contained"
           onPress={onSignUpPressed}
@@ -82,7 +103,7 @@ export default function RegisterScreen({ navigation }) {
             <Text style={styles.link}>Login</Text>
           </TouchableOpacity>
         </View>
-        <GoogleButton mode="contained" onPress={onSignUpPressed}></GoogleButton>
+        <GoogleButton mode="contained" onPress={onGoogleButtonPress}></GoogleButton>
       </View>
     </Background>
   )
@@ -103,5 +124,10 @@ const styles = StyleSheet.create({
   link: {
     fontWeight: 'bold',
     color: theme.colors.primary,
+  },
+  error: {
+    fontSize: 13,
+    color: theme.colors.error,
+    paddingTop: 8,
   },
 })
