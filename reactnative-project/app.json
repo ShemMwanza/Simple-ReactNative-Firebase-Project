@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "newProject",
+    "name": "MNB Shop",
     "slug": "newProject",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,17 +11,27 @@
       "resizeMode": "contain",
       "backgroundColor": "#2dd27b"
     },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "buildNumber": "1.0.0",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.shemnzamba.mnbshop"
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.shemnzamba.mnbshop"
     },
     "web": {
       "favicon": "./assets/logo.png"
@@ -30,9 +40,14 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "The app needs access to your camera in order to take photos of your favorite places."
+          "cameraPermission": "The app needs access to your camera in order to take photos."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "fef738eb-a5aa-4439-bac0-3a6890599ff2"
+      }
+    }
   }
 }
