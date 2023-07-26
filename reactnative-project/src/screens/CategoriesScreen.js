@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         width: '100%',
-        paddingHorizontal: 4,
+        paddingHorizontal: 2,
         // alignItems: 'center',
         // justifyContent: 'center',
         backgroundColor: theme.colors.white, // Grey background color

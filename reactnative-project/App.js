@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Provider } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -18,11 +18,29 @@ import AppLoading from 'expo-app-loading';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PaymentMethodScreen from './src/screens/PaymentMethodScreen';
 import SpecificProductScreen from './src/screens/SpecificProductScreen';
-import MpesaPaymentScreen
-  from './src/screens/MpesaPaymentScreen';
+import MpesaPaymentScreen from './src/screens/MpesaPaymentScreen';
 
 export default function App() {
   const Stack = createStackNavigator();
+  const [initialRoute, setInitialRoute] = useState('StartScreen');
+
+  useEffect(() => {
+    const checkStoredUser = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem('currentUser');
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          if (user) {
+            setInitialRoute('Dashboard');
+          }
+        }
+      } catch (error) {
+        console.log('Error checking stored user:', error);
+      }
+    };
+
+    checkStoredUser();
+  }, []);
 
   return (
     <AuthProvider>
@@ -30,7 +48,7 @@ export default function App() {
         <StatusBar mode='light' />
         <NavigationContainer>
           <Stack.Navigator
-            // initialRouteName="StartScreen"
+            initialRouteName={initialRoute}
             screenOptions={{
               headerShown: false,
             }}
@@ -95,7 +113,6 @@ export default function App() {
               component={MpesaPaymentScreen}
               options={{
                 headerShown: false,
-
                 headerStyle: {
                   backgroundColor: theme.colors.primary,
                 },

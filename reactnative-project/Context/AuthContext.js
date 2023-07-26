@@ -26,6 +26,7 @@ import {
 } from "firebase/firestore";
 import { useState } from "react";
 import { v4 as uuid } from 'uuid';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext();
 
@@ -98,10 +99,26 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             setCurrentUser(user);
+            AsyncStorage.setItem('currentUser', JSON.stringify(user));
             setLoading(false);
         });
 
         return unsubscribe;
+    }, []);
+
+    useEffect(() => {
+        const loadCurrentUserFromStorage = async () => {
+            try {
+                const userJson = await AsyncStorage.getItem('currentUser');
+                const user = JSON.parse(userJson);
+                setCurrentUser(user);
+                setLoading(false);
+            } catch (error) {
+                console.log('Error loading currentUser from AsyncStorage:', error);
+            }
+        };
+
+        loadCurrentUserFromStorage();
     }, []);
 
     const isItemInCart = async (productID) => {
@@ -184,7 +201,7 @@ export function AuthProvider({ children }) {
     const paginate = pageNumber => setCurrentPage(pageNumber);
 
     const [prodID, setProdID] = useState([]);
-
+    console.log(currentUser);
     const value = {
         currentUser,
         logInWithEmailAndPassword,
